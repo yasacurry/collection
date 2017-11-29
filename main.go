@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -15,6 +16,8 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 )
 
+var lineFlag = flag.Bool("l", false, "use LINE Notify")
+var streamFlag = flag.Bool("s", false, "show User Stream")
 var jst *time.Location
 var twitter *anaconda.TwitterApi
 var line *LineApi
@@ -22,6 +25,7 @@ var words []string
 var messageTemplate *template.Template
 
 func main() {
+	flag.Parse()
 	setup()
 	readStream()
 }
@@ -30,7 +34,9 @@ func setup() {
 	setupJST()
 	setupTwitter()
 	setupWords()
-	setupLine()
+	if *lineFlag == true {
+		setupLine()
+	}
 	setupMessageTemplate()
 }
 
@@ -88,7 +94,7 @@ func readStream() {
 				fmt.Printf("@%v / %v\n%v\n%v\n", x.User.ScreenName, x.User.Name,
 					x.FullText, x.Entities)
 
-				if inspectTweet(x, words) == true {
+				if *lineFlag == true && inspectTweet(x, words) == true {
 					s := templateWrite(x)
 					lineNotify(s)
 				}
